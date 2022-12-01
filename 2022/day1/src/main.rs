@@ -17,5 +17,5 @@ fn main() {
     elves.reverse();
 
     println!("part1: {:#?}", elves[0]);
-    println!("part2: {:#?}", elves[0..3].to_vec().iter().sum::<u32>());
+    println!("part2: {:#?}", elves[0..3].iter().sum::<u32>());
 }
