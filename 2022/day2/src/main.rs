@@ -1,7 +1,7 @@
 use std::ops::AddAssign;
 
-struct Tuple(u32, u32);
-impl AddAssign for Tuple {
+struct Tuple<T>(T, T);
+impl<T: AddAssign> AddAssign for Tuple<T> {
     fn add_assign(&mut self, other: Self) {
         self.0 += other.0;
         self.1 += other.1;
