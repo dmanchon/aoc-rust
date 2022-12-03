@@ -50,7 +50,31 @@ fn part2() {
     println!("part2: {:#?}", solution);
 }
 
+fn part2_idiomatic() {
+    // sort of idiomatic, still trying to learn Rust
+    // is this really more idiomatic? or readable?
+    let solution: u32 = include_str!("../input.txt")
+        .lines()
+        .collect::<Vec<_>>()
+        .chunks(3)
+        .map(|chunk| {
+            chunk
+                .iter()
+                .map(|c| c.chars())
+                .map(|x| HashSet::<char>::from_iter(x))
+                .reduce(|mut a, b| {
+                    a.retain(|x| b.contains(x));
+                    a
+                })
+                .map_or(0, |x| calc_score(*x.iter().next().unwrap()))
+        })
+        .sum();
+
+    println!("part2: {:#?}", solution);
+}
+
 fn main() {
     part1();
     part2();
+    part2_idiomatic()
 }
