@@ -48,7 +48,7 @@ fn part1() {
 fn part2() {
     let mut count = 0;
     for line in include_str!("../input.txt").lines() {
-        let (x,y) = parse(line).expect("").1;
+        let (x,y) = parse(line).expect("problem parsing line").1;
         if x.overlap(&y) {
             count += 1;
         }
