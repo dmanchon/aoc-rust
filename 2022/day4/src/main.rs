@@ -29,28 +29,21 @@ fn parse(input: &str) -> IResult<&str, (Range, Range)> {
     Ok((input, r))
 }
 
-fn part1(ranges: &Vec<(Range, Range)>) {
-    let mut count = 0;
-    for (x,y) in ranges {
-        if x.fully_contains(&y) || y.fully_contains(&x) {
-            count += 1;
-        }
-    }
-    println!("part1: {:#?}", count);
-}
-
-fn part2(ranges: &Vec<(Range, Range)>) {
-    let mut count = 0;
-    for (x,y) in ranges {
-        if x.overlap(&y) {
-            count += 1;
-        }
-    }
-    println!("part2: {:#?}", count);
-}
-
 fn main() {
     let (_, ranges) = separated_list1(tag("\n"), parse)(include_str!("../input.txt")).expect("parsing input");
-    part1(&ranges);
-    part2(&ranges);
+
+    let mut part1 = 0;
+    let mut part2 = 0;
+    
+    for (x,y) in ranges {
+        if x.overlap(&y) {
+            part2 += 1;
+        }
+        if x.fully_contains(&y) || y.fully_contains(&x) {
+            part1 += 1;
+        }
+    }
+
+    println!("part1: {:#?}", part1);
+    println!("part2: {:#?}", part2);
 }
