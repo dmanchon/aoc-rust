@@ -37,7 +37,7 @@ fn parse(input: &str) -> IResult<&str, (Range, Range)> {
 fn part1() {
     let mut count = 0;
     for line in include_str!("../input.txt").lines() {
-        let (x,y) = parse(line).expect("").1;
+        let (x,y) = parse(line).expect("problem parsing line").1;
         if x.fully_contains(&y) || y.fully_contains(&x) {
             count += 1;
         }
