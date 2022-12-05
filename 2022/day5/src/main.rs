@@ -34,9 +34,9 @@ fn parse() -> (Vec<Vec<char>>, Vec<Move>) {
 
     let moves: Vec<Move> = input[1].lines()
         .map(|line| line.split(r" ").collect::<Vec<&str>>())
-        .map(|m| Move(m[1].parse::<usize>().unwrap(),
-                      m[3].parse::<usize>().unwrap(),
-                      m[5].parse::<usize>().unwrap()))
+        .map(|m| Move(m[1].parse::<usize>().expect("parsing move"),
+                      m[3].parse::<usize>().expect("parsing move"),
+                      m[5].parse::<usize>().expect("parsing move")))
         .collect();
 
     (stacks, moves)
@@ -52,7 +52,7 @@ fn part1() {
         }
     }
 
-    let solution: String = stacks.iter().map(|v| v.last().unwrap()).collect();
+    let solution: String = stacks.iter().filter_map(|v| v.last()).collect();
     println!("part1: {:#?}", solution);
 }
 
@@ -65,7 +65,7 @@ fn part2() {
         }
     }
 
-    let solution: String = stacks.iter().map(|v| v.last().unwrap()).collect();
+    let solution: String = stacks.iter().filter_map(|v| v.last()).collect();
     println!("part2: {:#?}", solution);
 }
 
