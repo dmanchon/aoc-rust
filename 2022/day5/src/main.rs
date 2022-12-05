@@ -19,18 +19,6 @@ fn parse() -> (Vec<Vec<char>>, Vec<Move>) {
         tmp.reverse();
         stacks[stack_no] = tmp;
     }
-    for stack_no in 0..N {
-        let mut tmp = vec![];
-        for line_no in 0..tallest {
-            let index = stack_no*4 + 1;
-            let c = state[line_no].as_bytes()[index];
-            if c != b' ' {
-                tmp.push(c as char);
-            }
-        }
-        tmp.reverse();
-        stacks[stack_no] = tmp;
-    }
 
     let moves: Vec<Move> = input[1].lines()
         .map(|line| line.split(r" ").collect::<Vec<&str>>())
