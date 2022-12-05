@@ -1,10 +1,10 @@
 use nom::{
+    multi::separated_list1,
     bytes::complete::tag,
     IResult,
+    sequence::separated_pair,
+    character::complete::u32,
 };
-use nom::multi::separated_list1;
-use nom::sequence::separated_pair;
-use nom::character::complete::u32;
 
 #[derive(Debug)]
 struct Range(u32,u32);
