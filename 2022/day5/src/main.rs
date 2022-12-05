@@ -1,9 +1,10 @@
-fn parse() -> (Vec<Vec<char>>, &'static str) {
-    let input: Vec<&str> = include_str!("../input.txt").split("\n\n").collect();
+const N: usize = 9;
+struct Move(usize, usize, usize);
 
+fn parse() -> (Vec<Vec<char>>, Vec<Move>) {
+    let input: Vec<&str> = include_str!("../input.txt").split("\n\n").collect();
     let state: Vec<_> = input[0].lines().collect();
     let tallest = state.len() - 1;
-    const N: usize = 9;
     let mut stacks: Vec<Vec<char>> = vec![vec![]; N];
 
     for stack_no in 0..N {
@@ -31,15 +32,19 @@ fn parse() -> (Vec<Vec<char>>, &'static str) {
         stacks[stack_no] = tmp;
     }
 
-    (stacks, input[1])
+    let moves: Vec<Move> = input[1].lines()
+        .map(|line| line.split(r" ").collect::<Vec<&str>>())
+        .map(|m| Move(m[1].parse::<usize>().unwrap(),
+                      m[3].parse::<usize>().unwrap(),
+                      m[5].parse::<usize>().unwrap()))
+        .collect();
+
+    (stacks, moves)
 }
 
 fn part1() {
     let (mut stacks, moves) = parse();
-    for move_str in moves.lines() {
-        let mov: Vec<_> = move_str.split(r" ").collect();
-        let (n, from, to) = (mov[1].parse::<usize>().unwrap(), mov[3].parse::<usize>().unwrap(), mov[5].parse::<usize>().unwrap());
-
+    for Move(n, from, to) in moves {
         for _ in 0..n {
             if let Some(e) = stacks[from-1].pop() {
                 stacks[to-1].push(e);                
@@ -47,32 +52,20 @@ fn part1() {
         }
     }
 
-    let mut solution: Vec<&char> = vec![];
-    for s in &stacks {
-        solution.push(s.last().unwrap());
-        
-    }
+    let solution: String = stacks.iter().map(|v| v.last().unwrap()).collect();
     println!("part1: {:#?}", solution);
 }
 
 fn part2() {
     let (mut stacks, moves) = parse();
-    for move_str in moves.lines() {
-        let mov: Vec<_> = move_str.split(r" ").collect();
-        let (n, from, to) = (mov[1].parse::<usize>().unwrap(), mov[3].parse::<usize>().unwrap(), mov[5].parse::<usize>().unwrap());
-
+    for Move(n, from, to) in moves {
         let len = stacks[from-1].len();
         for e in stacks[from-1].drain(len-n..).collect::<Vec<_>>() {
             stacks[to-1].push(e);            
         }
-
     }
 
-    let mut solution: Vec<&char> = vec![];
-    for s in &stacks {
-        solution.push(s.last().unwrap());
-        
-    }
+    let solution: String = stacks.iter().map(|v| v.last().unwrap()).collect();
     println!("part2: {:#?}", solution);
 }
 
