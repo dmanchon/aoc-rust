@@ -7,7 +7,7 @@ fn solve_idiomatic(n: usize) -> usize {
         .position(|x| x == n) {
             pos + n
         } else {
-            0
+            panic!("not found")
         }
 }
 
