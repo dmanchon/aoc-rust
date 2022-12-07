@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+// in general terms is just same as python, not idiomatic, try later to refactor
 fn main() {
     let mut fs: HashMap<String, usize> = HashMap::new();
     let lines: Vec<_> = include_str!("../input.txt").lines().collect();
@@ -24,10 +25,11 @@ fn main() {
                         dirs.push(s);   
                     },
                     size => {
+                        // this is ugly: refactor -> build_path?
                         let mut tmp = current.clone();
                         tmp.push(res[1].to_string());
-                        let xx = tmp.join("/");
-                        *fs.entry(xx.to_string()).or_insert(0) += size.parse::<usize>().unwrap();
+                        let path = tmp.join("/");
+                        *fs.entry(path.to_string()).or_insert(0) += size.parse::<usize>().unwrap();
                     }
                 }
             }
