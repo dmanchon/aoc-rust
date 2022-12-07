@@ -1,62 +1,112 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
-// in general terms is just same as python, not idiomatic, try later to refactor
-fn main() {
-    let mut fs: HashMap<String, usize> = HashMap::new();
-    let lines: Vec<_> = include_str!("../input.txt").lines().collect();
-    
-    let mut i = 1;
-    let mut current: Vec<String>  = vec!["".to_string()];
-    let mut dirs : Vec<String> = vec!["/".to_string()];
+use nom::IResult;
+use nom::bytes::complete::tag;
+use nom::branch::alt;
+use nom::character::complete::not_line_ending;
+use nom::multi::separated_list1;
+use nom::sequence::separated_pair;
+use nom::character::complete::newline;
+use nom::sequence::pair;
 
-    while i < lines.len() {        
-        if lines[i].starts_with(r"$ ls") {
-            loop {
-                i += 1;
-                if i == lines.len() {break;}
-                let res: Vec<_> = lines[i].split(r" ").collect();
-
-                match res[0] {
-                    "$"|"" => {break;}
-                    "dir" => {
-                        let mut tmp = current.clone();
-                        tmp.push(res[1].to_string());
-                        let s = format!("{}/", tmp.join("/"));
-                        dirs.push(s);   
-                    },
-                    size => {
-                        // this is ugly: refactor -> build_path?
-                        let mut tmp = current.clone();
-                        tmp.push(res[1].to_string());
-                        let path = tmp.join("/");
-                        *fs.entry(path.to_string()).or_insert(0) += size.parse::<usize>().unwrap();
-                    }
-                }
-            }
-            continue;
-        } else if lines[i].starts_with(r"$ cd "){
-            let dir: Vec<_> = lines[i].split(r"$ cd ").collect();
-            if dir[1] == ".." {
-                current.pop();
-            } else {
-                current.push(dir[1].to_string());
-            }
-        }
-        i += 1;
-    }
-
-    let mut sizes: HashMap<&String, usize> = HashMap::new();
-    for dir in &dirs {
-        let a: usize = fs.iter().filter(|(k,_)|k.starts_with(dir)).map(|(_, &v)| v).sum();
-        sizes.insert(dir, a);
-    }
-
-    let part1 = sizes.clone().into_values().filter(|&x| x<100000).sum::<usize>();
-    println!("part1: {}", part1);
-
-    let required = 30000000 - (70000000 - sizes[&"/".to_string()]);
-    let mut values = sizes.into_values().collect::<Vec<_>>();
-    values.sort();
-    let part2 = &values.iter().find(|&&x| x > required);
-    println!("part2: {:#?}", part2.unwrap());
+#[derive(Debug)]
+enum Command<'a> {
+    Cd(&'a str),
+    Ls(Vec<FileKind<'a>>),
 }
+
+#[derive(Debug)]
+enum FileKind<'a> {
+    File{name: &'a str, size: u32},
+    Folder(&'a str),
+}
+
+#[derive(Debug, Clone, Copy)]
+struct File<'a> {
+    name: &'a str,
+    size: &'a u32,
+}
+fn parse_cd(input: &str) -> IResult<&str, Command> {
+    let (input, (_, name)) = pair(tag("$ cd "), alt((not_line_ending, tag("/"))))(input)?;
+    Ok((input, Command::Cd(name)))
+}
+
+fn parse_file(input: &str) -> IResult<&str, FileKind> {
+    let (input, (size, name)) = separated_pair(nom::character::complete::u32, tag(" "), not_line_ending)(input)?;
+    Ok((input, FileKind::File{size, name}))
+}
+
+fn parse_folder(input: &str) -> IResult<&str, FileKind> {
+    let (input, (_, name)) = pair(tag("dir "), not_line_ending)(input)?;
+    Ok((input, FileKind::Folder(name)))
+}
+
+fn parse_dir(input: &str) -> IResult<&str, Vec<FileKind>> {
+    let (input, dirs) = separated_list1(newline, alt((parse_file, parse_folder)))(input)?;
+    Ok((input, dirs))
+}
+
+fn parse_ls(input: &str) -> IResult<&str, Command> {
+    let (input, _) = tag("$ ls")(input)?;
+    let (input, _) = newline(input)?;
+    let (input, files) = parse_dir(input)?;
+    Ok((input, Command::Ls(files)))
+}
+
+fn parse_commands(input: &str) -> IResult<&str, Vec<Command>> {
+    let (input, cmds) = separated_list1(newline, alt((parse_ls, parse_cd)))(input)?;
+    Ok((input, cmds))
+}
+
+fn main() {
+    let mut cwd: Vec<&str> = vec![];
+    let mut fs: HashMap<String, Vec<File>> = HashMap::new();
+    
+    if let Ok((_, cmds)) = parse_commands(include_str!("../input.txt")) {
+	for cmd in &cmds {
+	    match cmd {
+		Command::Cd("/") => {
+		    cwd.push("/");
+		},
+		Command::Cd("..") => {
+		    cwd.pop();
+		},
+		Command::Cd(path) => {
+		    cwd.push(path);
+		},
+		Command::Ls(paths) => {
+		    for path in paths {
+			match path {
+			    FileKind::File{name, size}=> {
+				let file = File{name, size};
+				fs.entry(cwd.join("/"))
+				    .and_modify(|e| {
+					e.push(file);
+				    }).or_insert(vec![file]);
+			    },
+			    f@FileKind::Folder(..) => (),
+			}
+		    }
+		},	 
+	    }	 
+	}
+	let mut sizes: BTreeMap<String, u32> = BTreeMap::new();
+	for (path, files) in fs.iter() {
+	    let total = files
+		.iter()
+		.map(|File{size, ..}| *size)
+		.sum::<u32>();
+	    sizes.insert(path.to_string(), total);
+	}
+	dbg!(&sizes);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_folder_create() {
+
+    }
+}
+
