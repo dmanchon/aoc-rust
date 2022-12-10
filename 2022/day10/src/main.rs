@@ -34,11 +34,11 @@ fn main() {
             Some(*acc)
         })
         .enumerate()
-        .filter(|&(i, _)| [19, 59, 99, 139, 179, 219].contains(&i))
+        .filter(|&(i, _)| [20, 60, 100, 140, 180, 220].map(|x|x-1).contains(&i))
         .map(|(i, x)| (i+1) as i32 * x).sum();
     println!("part1: {}", part1);
 
-    let part2: Vec<u8> = states.iter()
+    let part2 = states.iter()
         .scan(0, |acc, &x| {
             *acc = *acc + x;
             Some(*acc)
@@ -46,16 +46,13 @@ fn main() {
         .enumerate()
         .map(|(i, x)| {
             match i32::abs(x%40 - (i as i32)%40) {
-                v if v < 2 => b'#',
-                _ => b'.'
+                v if v < 2 => '#',
+                _ => '.'
             }
-        }).collect();
+        })
+        .collect::<Vec<char>>()
+        .chunks(40).map(|c| c.iter().collect::<String>())
+        .collect::<Vec<_>>().join("\n");
 
-    println!("part2:");
-    for i in 0..part2.len()-1 {
-        if i%40==0 {
-            print!("\n");
-        }
-        print!("{}", part2[i] as char);
-    }
+    println!("{}", part2);   
 }
