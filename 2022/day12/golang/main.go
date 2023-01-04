@@ -16,8 +16,8 @@ var input string
 //go:embed sample.txt
 var sample string
 
-type heightMap map[complex128]rune
-type graph map[complex128][]complex128
+type heightMap map[complex64]rune
+type graph map[complex64][]complex64
 
 func NewHeightMap(input string) heightMap {
 	heights := make(heightMap)
@@ -27,13 +27,13 @@ func NewHeightMap(input string) heightMap {
 
 	for i := 0; scanner.Scan(); i++ {
 		for j, ch := range scanner.Text() {
-			heights[complex(float64(j), float64(i))] = ch
+			heights[complex(float32(j), float32(i))] = ch
 		}
 	}
 	return heights
 }
 
-func (m heightMap) FindExtremes() (S complex128, E complex128) {
+func (m heightMap) FindExtremes() (S complex64, E complex64) {
 	for k, v := range m {
 		switch v {
 		case 'S':
@@ -45,8 +45,8 @@ func (m heightMap) FindExtremes() (S complex128, E complex128) {
 	return
 }
 
-func (m heightMap) FindStarts() []complex128 {
-	nodes := make([]complex128, 0)
+func (m heightMap) FindStarts() []complex64 {
+	nodes := make([]complex64, 0)
 
 	for k, v := range m {
 		if v == 'a' || v == 'S' {
@@ -59,8 +59,8 @@ func (m heightMap) FindStarts() []complex128 {
 func (m heightMap) Graph() graph {
 	g := make(graph)
 	for k, v := range m {
-		g[k] = make([]complex128, 0)
-		for _, d := range [4]complex128{1 + 0i, -1 + 0i, 0 + 1i, 0 - 1i} {
+		g[k] = make([]complex64, 0)
+		for _, d := range [4]complex64{1 + 0i, -1 + 0i, 0 + 1i, 0 - 1i} {
 			vn, exists := m[k+d]
 			if !exists {
 				continue
@@ -78,7 +78,7 @@ func (m heightMap) Graph() graph {
 	return g
 }
 
-func contains(arr []complex128, target complex128) bool {
+func contains(arr []complex64, target complex64) bool {
 	for _, candidate := range arr {
 		if candidate == target {
 			return true
@@ -87,9 +87,9 @@ func contains(arr []complex128, target complex128) bool {
 	return false
 }
 
-func (g graph) Dfs(start, end complex128) []complex128 {
-	s := stack.NewStack[complex128]()
-	visited := make([]complex128, 0)
+func (g graph) Dfs(start, end complex64) []complex64 {
+	s := stack.NewStack[complex64]()
+	visited := make([]complex64, 0)
 	s.Push(start)
 	for {
 		node, _ := s.Peek()
@@ -111,10 +111,10 @@ func (g graph) Dfs(start, end complex128) []complex128 {
 	}
 }
 
-func (g graph) Bfs(start, end complex128) []complex128 {
-	q := queue.NewQueue[complex128]()
-	parents := make(map[complex128]complex128)
-	visited := make([]complex128, 0)
+func (g graph) Bfs(start, end complex64) []complex64 {
+	q := queue.NewQueue[complex64]()
+	parents := make(map[complex64]complex64)
+	visited := make(map[complex64]struct{})
 
 	q.Push(start)
 
@@ -124,7 +124,7 @@ func (g graph) Bfs(start, end complex128) []complex128 {
 			break
 		}
 		if node == end {
-			s := stack.NewStack[complex128]()
+			s := stack.NewStack[complex64]()
 			first, last := end, parents[end]
 			for last != start {
 				s.Push(first)
@@ -136,11 +136,11 @@ func (g graph) Bfs(start, end complex128) []complex128 {
 			return s.S
 		}
 		for _, possible := range g[node] {
-			if contains(visited, possible) {
+			if _, ok := visited[possible]; ok {
 				continue
 			}
 
-			visited = append(visited, possible)
+			visited[possible] = struct{}{}
 			q.Push(possible)
 			parents[possible] = node
 		}
